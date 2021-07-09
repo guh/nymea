@@ -198,7 +198,7 @@ Architecture: any
 Multi-Arch: same
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         libnymea1 (= ${binary:Version}),
+         libnymea-dev (= ${binary:Version}),
          qttools5-dev-tools,
          rsync,
 Description: Tools for developing nymea plugins.

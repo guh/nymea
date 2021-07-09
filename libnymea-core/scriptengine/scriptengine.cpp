@@ -31,6 +31,7 @@
 #include "scriptengine.h"
 #include "integrations/thingmanager.h"
 
+#include "nymeascript.h"
 #include "scriptaction.h"
 #include "scriptevent.h"
 #include "scriptstate.h"
@@ -60,6 +61,7 @@ QMutex ScriptEngine::s_loggerMutex;
 ScriptEngine::ScriptEngine(ThingManager *deviceManager, QObject *parent) : QObject(parent),
     m_deviceManager(deviceManager)
 {
+    qmlRegisterType<NymeaScript>("nymea", 1, 0, "NymeaScript");
     qmlRegisterType<ScriptEvent>("nymea", 1, 0, "DeviceEvent");
     qmlRegisterType<ScriptAction>("nymea", 1, 0, "DeviceAction");
     qmlRegisterType<ScriptState>("nymea", 1, 0, "DeviceState");

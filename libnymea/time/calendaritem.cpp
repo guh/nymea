@@ -32,10 +32,9 @@
     \class CalendarItem
     \brief Describes a clendar item.
 
-    \ingroup rules
-    \inmodule core
+    \ingroup time
 
-    \sa Rule, TimeDescriptor
+    \sa TimeDescriptor, TimeEventItem
 */
 
 #include "calendaritem.h"

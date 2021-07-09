@@ -32,10 +32,9 @@
     \class Param
     \brief Holds the parameters of a Param.
 
-    \ingroup nymea-types
-    \inmodule libnymea
+    \ingroup types
 
-    \sa Device, ParamType, ParamDescriptor
+    \sa Thing, ParamType, ParamDescriptor
 */
 
 #include "param.h"

@@ -33,7 +33,7 @@
   \brief Allows to handle UPnP discovery request in the network.
 
   \ingroup hardware
-  \inmodule libguh
+  \inmodule libnymea
 
   \sa UpnpDevice, UpnpDiscovery
 */

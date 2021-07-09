@@ -1,7 +1,0 @@
-/*!
-    \namespace nymeaserver
-    \brief The namespace for the nymea server.
-    \inmodule core        
-
-    This namespace represents the whole nymea server. This prevents duplicated class names in plugin and core.
-*/

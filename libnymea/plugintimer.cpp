@@ -33,23 +33,23 @@
     \brief The plugin timer class for plugins.
 
     \ingroup hardware
-    \inmodule libguh
+    \inmodule libnymea
 
-    The plugin timer allows to trigger repeating actions in a device plugin. This timer does not represent a precise timer
-    should be used for not time critical things. The PluginTimerManager will schedule the requested timer as needed and
-    trigger the timeout() method.
+    The plugin timer allows to trigger repeating actions in an integration plugin. This
+    timer does not represent a precise timer and should be used for not time critical things.
+    The PluginTimerManager will schedule the requested timer as needed and trigger the timeout() method.
 
 
     \chapter Example
 
-    In order to do something repeatedly in a \l{DevicePlugin} you can register a new PluginTimer like this:
+    In order to do something repeatedly in an \l{IntegrationPlugin} you can register a new PluginTimer like this:
 
-    \tt devicepluginexample.h
+    \tt integrationpluginexample.h
 
     \code
     #include "plugintimer.h"
 
-    class DevicePluginExample : public DevicePlugin
+    class IntegrationPluginExample : public IntegrationPlugin
     {
     ...
     public:
@@ -57,25 +57,23 @@
 
     private:
         PluginTimer *m_pluginTimer = nullptr;
-
-    private slots:
-        void onPluginTimerTimeout();
-
     ...
 
     };
     \endcode
 
-    \tt devicepluginexample.cpp
+    \tt integrationpluginexample.cpp
 
     \code
 
-    void DevicePluginExample::init() {
+    void IntegrationPluginExample::init() {
         m_pluginTimer = hardwareManager()->pluginTimerManager()->registerTimer(10);
-        connect(m_pluginTimer, &PluginTimer::timeout, this, &DevicePluginExample::onPluginTimerTimeout);
+        connect(m_pluginTimer, &PluginTimer::timeout, this, [this](){
+            ...
+        });
     }
 
-    DevicePluginExample::~DevicePluginExample()
+    IntegrationPluginExample::~IntegrationPluginExample()
     {
         hardwareManager()->pluginTimerManager()->unregisterTimer(m_pluginTimer);
     }
@@ -85,7 +83,6 @@
     \sa PluginTimerManager
 */
 
-// Public
 /*! \fn PluginTimer::~PluginTimer();
     The virtual destructor of the PluginTimer. You should always use the PluginTimerManager for destroying a PluginTimer object.
 */
@@ -104,7 +101,6 @@
     \sa start(), stop(), pause(), resume(), reset()
 */
 
-// Signals
 /*! \fn void PluginTimer::timeout();
     This signal will be emitted if the timer timeouted.
 */
@@ -127,21 +123,8 @@
     \sa running()
 */
 
-// Public slots
 /*! \fn void PluginTimer::reset();
     This method resets the timer to 0. This method does not change the current running state or the configured interval.
-*/
-
-/*! \fn void PluginTimer::start();
-    Starts the timer.
-
-    \sa running(), runningChanged()
-*/
-
-/*! \fn void PluginTimer::stop();
-    Stops the timer.
-
-    \sa running(), runningChanged()
 */
 
 /*! \fn void PluginTimer::pause();
@@ -149,6 +132,18 @@
 
     \sa running()
 */
+
+/*! \fn void PluginTimer::start();
+    Starts the timer.
+*/
+
+/*!
+    \fn void PluginTimer::stop();
+    Stops the timer.
+
+    \sa running(), runningChanged()
+*/
+
 
 /*! \fn void PluginTimer::resume();
     Resumes the timer. If the timer was not on paused, this method has no effect.
@@ -163,7 +158,7 @@
     \brief The plugin timer manager for guh.
 
     \ingroup hardware
-    \inmodule libguh
+    \inmodule libnymea
 
     The plugin timer manager allows to register and unregister generic timers for device plugins. In order to save
     resources the PluginTimerManager is responsible to schedule the timers appropriate and stop them if the HardwareResource

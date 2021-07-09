@@ -41,8 +41,6 @@ piconly {
 
 doc.depends = FORCE
 # Note: some how extraimages in qdocconf did not the trick
-doc.commands += cd $$top_srcdir/doc; ./generate-interfaces-qdoc.py;
-doc.commands += cd $$top_srcdir/doc; ./generate-api-qdoc.py;
 doc.commands += cd $$top_srcdir/doc; qdoc --highlighting config.qdocconf; cp -r images/* html/images/; \
                 cp -r favicons/* html/; cp -r $$top_srcdir/doc/html $$top_builddir/
 QMAKE_EXTRA_TARGETS += doc

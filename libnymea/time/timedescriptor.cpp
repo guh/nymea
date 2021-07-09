@@ -29,17 +29,18 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class nymeaserver::TimeDescriptor
-    \brief Describes the time elements of a time based \l{nymeaserver::Rule}{Rule}.
+    \class TimeDescriptor
+    \brief A \l{TimeDescriptor} is used to describe times.
 
-    \ingroup rules
-    \inmodule core
+    \ingroup time
 
-    A time based rule can be described with a \l{TimeDescriptor}. The \l{TimeDescriptor}
-    can have either a list of \l{TimeEventItem}{TimeEventItems} or a list of \l{CalendarItem}{CalendarItems},
-    never both.
+    Times can be described by events, either single events or recurring events or time frames. Time
+    events are described using \l{TimeEventItem}{TimeEventItems} while time frames are desceibed
+    using \l{CalendarItem}{CalendarItems}.
+    A single \l{TimeDescriptor} van have either a list of \l{TimeEventItem}{TimeEventItems} or a list
+    of \l{CalendarItem}{CalendarItems} but never both at the same time.
 
-    \sa Rule, TimeEventItem, CalendarItem
+    \sa TimeEventItem, CalendarItem
 */
 
 #include "timedescriptor.h"

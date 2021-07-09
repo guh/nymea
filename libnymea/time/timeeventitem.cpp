@@ -29,14 +29,12 @@
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /*!
-    \class nymeaserver::TimeEventItem
-    \brief Describes a time event of a time based \l{nymeaserver::Rule}{Rule}.
+    \class TimeEventItem
+    \brief Describes a time event in a \l{TimeDescriptor}.
 
-    \ingroup rules
-    \inmodule core
+    \ingroup time
 
-
-    \sa Rule, TimeDescriptor, CalendarItem
+    \sa TimeDescriptor, CalendarItem
 */
 
 #include "timeeventitem.h"

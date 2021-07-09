@@ -1,42 +1,6 @@
 include(html-styles.qdocconf)
 
 HTML.postheader = \
-    "<div class=\"header\">\n" \
-    "  <nav class=\"nymea-navbar-container nymea-margin nymea-navbar\">\n" \
-    "    <div class=\"nymea-navbar-center\">\n" \
-    "      <div class=\"nymea-navbar-center-left\">\n" \
-    "        <div>\n" \
-    "          <ul class=\"nymea-navbar-nav\">\n" \
-    "            <li><a href=\"index.html\">Home</a></li>\n" \
-    "            <li><a href=\"nymeaserver.html\">Server</a></li>\n" \
-    "            <li><a href=\"libnymea-module.html\">Lib</a></li>\n" \
-    "          </ul>\n" \
-    "        </div>\n" \
-    "      </div>\n" \
-    "      <a href=\"index.html\" class=\"indexref nymea-logo\"> <img src=\"images/main-logo.svg\" class=\"nymea-main-logo\"/> </a> \n" \
-    "      <div class=\"nymea-navbar-center-right\">\n" \
-    "        <div>\n" \
-    "          <ul class=\"nymea-navbar-nav\">\n" \
-    "            <li><a href=\"interfaces.html\">Interfaces</a></li>\n" \
-    "            <li><a href=\"jsonrpc.html\">API</a></li>\n" \
-    "            <li><a href=\"write-plugins.html\">Write Plugins</a></li>\n" \
-    "            <li>\n" \
-    "              <div class=\"switchAligner\" >\n" \
-    "                <label class=\"switch\">\n " \
-    "                  <input type=\"checkbox\" onclick=\"onSwitchChanged(this)\" id=\"themeSwitch\">\n" \
-    "                  <span class=\"slider round\"></span>\n" \
-    "                </label>\n" \
-    "              </div>\n" \
-    "            </li>\n" \
-    "          </ul>\n" \
-    "        </div>\n" \
-    "      </div>\n" \
-    "    </div>\n" \
-    "  </nav>\n" \
-    "</div>\n" \
-
-
-HTML.postpostheader = \
     "<div class=\"content mainContent\">\n"
 
 HTML.prologue = \

@@ -32,7 +32,7 @@
     \class HardwareManager
     \brief The main entry point when interacting with \l{HardwareResource}{hardware resources}
 
-    \inmodule libguh
+    \inmodule libnymea
 
     \sa HardwareResource
 */

@@ -32,8 +32,7 @@
   \class IntegrationPlugin
   \brief This is the base class interface for integration plugins.
 
-  \ingroup things
-  \inmodule libnymea
+  \ingroup integrations
 
   Integration plugins extend nymea to allow integrating a device or online service, commonly referred to as thing in IoT.
 

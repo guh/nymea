@@ -32,7 +32,7 @@
     \class HardwareResource
     \brief The base class for hardware resources.
 
-    \inmodule libguh
+    \inmodule libnymea
 
     \sa HardwareResource
 */

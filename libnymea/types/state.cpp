@@ -30,13 +30,12 @@
 
 /*!
   \class State
-  \brief Holds the parameters of a State of a \l{Device}.
+  \brief Holds the value of a State of a \l{Thing}.
 
   \ingroup nymea-types
-  \inmodule libnymea
 
-  States hold the state values for devices. A State is associated to a \l{Device} by
-  the \l{State::deviceId()} and represents the value of a state described in a \l{StateType}
+  States hold the state values for devices. A State is associated to a \l{Thing} by
+  the \l{State::thingId()} and represents the value of a state described in a \l{StateType}
 
   \sa StateType, StateDescriptor
 */
@@ -48,8 +47,10 @@ State::State()
 
 }
 
-/*! Constructs a State reflecting the \l{StateType} given by \a stateTypeId
- *  and associated with the \l{Device} given by \a deviceId */
+/*!
+    Constructs a State reflecting the \l{StateType} given by \a stateTypeId
+    and associated with the \l{Device} given by \a deviceId
+*/
 State::State(const StateTypeId &stateTypeId, const ThingId &deviceId):
     m_stateTypeId(stateTypeId),
     m_thingId(deviceId)

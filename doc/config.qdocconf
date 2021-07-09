@@ -1,16 +1,16 @@
 include(html-template.qdocconf)
 
 project = nymea - developer
-description = Developer documentation!
+description = Developer documentation
 
 dita.metadata.default.author      = Simon Stürz
 dita.metadata.default.permissions = all
 dita.metadata.default.publisher   = nymea GmbH
-dita.metadata.default.copyryear = 2019
+dita.metadata.default.copyryear = 2020
 dita.metadata.default.copyrholder = Simon Stürz
 dita.metadata.default.audience = programmer
 
-defines = DECLARE_TYPE_ID
+#defines = DECLARE_TYPE_ID
 
 outputdir = html
 outputformats = HTML
@@ -24,17 +24,22 @@ sourceencoding          = UTF-8
 syntaxhighlighting = true
 versionsym = NYMEA_VERSION_STRING
 
-headerdirs = ..
+headerdirs = ../libnymea/time
 headers.fileextensions = "*.h"
 
 imagedirs = images
 
 exampledirs = examples/
 
-sourcedirs = ..
+sourcedirs = ../libnymea/time .
 sources.fileextensions = "*.cpp *.qdoc"
 
 Cpp.ignoredirectives = Q_DECLARE_METATYPE \
                        Q_ENUM \
                        Q_ENUMS \
+                       Q_PROPERTY \
+
+Cpp.ignoretokens = Q_OBJECT \
+                   Q_INVOKABLE \
+                   Q_GADGET \
 

@@ -139,7 +139,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
                     "Things with CreateMethodDiscovery require the use of a thingDescriptorId. For discovered "
                     "things, params are not required and will be taken from the ThingDescriptor, however, they "
                     "may be overridden by supplying thingParams.";
-    params.insert("thingClassId", enumValueName(Uuid));
+    params.insert("o:thingClassId", enumValueName(Uuid));
     params.insert("name", enumValueName(String));
     params.insert("o:thingDescriptorId", enumValueName(Uuid));
     params.insert("o:thingParams", objectRef<ParamList>());
@@ -631,7 +631,7 @@ JsonReply* IntegrationsHandler::SetPluginConfiguration(const QVariantMap &params
 
 JsonReply* IntegrationsHandler::AddThing(const QVariantMap &params, const JsonContext &context)
 {
-    ThingClassId ThingClassId(params.value("thingClassId").toString());
+    ThingClassId thingClassId(params.value("thingClassId").toString());
     QString thingName = params.value("name").toString();
     ParamList thingParams = unpack<ParamList>(params.value("thingParams"));
     ThingDescriptorId thingDescriptorId(params.value("thingDescriptorId").toString());
@@ -641,7 +641,16 @@ JsonReply* IntegrationsHandler::AddThing(const QVariantMap &params, const JsonCo
 
     ThingSetupInfo *info;
     if (thingDescriptorId.isNull()) {
-        info = NymeaCore::instance()->thingManager()->addConfiguredThing(ThingClassId, thingParams, thingName);
+        if (thingClassId.isNull()) {
+            qCWarning(dcJsonRpc()) << "Either thingClassId or thingDescriptorId is required.";
+            QVariantMap returns;
+            returns.insert("thingError", enumValueName<Thing::ThingError>(Thing::ThingErrorMissingParameter));
+            jsonReply->setData(returns);
+            jsonReply->finished();
+            return jsonReply;
+        }
+        info = NymeaCore::instance()->thingManager()->addConfiguredThing(thingClassId, thingParams, thingName);
+
     } else {
         info = NymeaCore::instance()->thingManager()->addConfiguredThing(thingDescriptorId, thingParams, thingName);
     }

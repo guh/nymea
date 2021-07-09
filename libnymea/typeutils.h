@@ -1,6 +1,6 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 *
-* Copyright 2013 - 2020, nymea GmbH
+* Copyright 2013 - 2021, nymea GmbH
 * Contact: contact@nymea.io
 *
 * This file is part of nymea.
@@ -179,6 +179,23 @@ public:
         StateValueFilterAdaptive
     };
     Q_ENUM(StateValueFilter)
+
+    enum PermissionScope {
+        PermissionScopeNone             = 0x0000,
+        PermissionScopeControlThings    = 0x0001,
+        PermissionScopeConfigureThings  = 0x0003,
+        PermissionScopeExecuteRules     = 0x0010,
+        PermissionScopeConfigureRules   = 0x0030,
+        PermissionScopeAdmin            = 0xFFFF,
+    };
+    Q_ENUM(PermissionScope)
+    Q_DECLARE_FLAGS(PermissionScopes, PermissionScope)
+    Q_FLAG(PermissionScopes)
+
+    static PermissionScopes scopesFromStringList(const QStringList &scopeList);
+    static PermissionScope scopeFromString(const QString &scopeString);
+    static QStringList scopesToStringList(PermissionScopes scopes);
+    static QString scopeToString(PermissionScope scope);
 };
 
 Q_DECLARE_METATYPE(Types::InputType)

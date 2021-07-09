@@ -105,7 +105,7 @@ UserManager::UserManager(const QString &dbName, QObject *parent):
         if (QFileInfo(m_db.databaseName()).exists()) {
             rotate(m_db.databaseName());
             if (!initDB()) {
-                qCWarning(dcLogEngine()) << "Error fixing user database. Giving up. Users can't be stored.";
+                qCWarning(dcUserManager()) << "Error fixing user database. Giving up. Users can't be stored.";
             }
         }
     }
@@ -133,19 +133,21 @@ bool UserManager::initRequired() const
 }
 
 /*! Returns the list of user names for this UserManager. */
-QStringList UserManager::users() const
+UserInfoList UserManager::users() const
 {
-    QString userQuery("SELECT username FROM users;");
+    QString userQuery("SELECT username, scopes FROM users;");
     QSqlQuery result = m_db.exec(userQuery);
-    QStringList ret;
+    UserInfoList users;
     while (result.next()) {
-        ret << result.value("username").toString();
+        UserInfo info = UserInfo(result.value("username").toString());
+        info.setScopes(Types::scopesFromStringList(result.value("scopes").toString().split(',')));
+        users.append(info);
     }
-    return ret;
+    return users;
 }
 
 /*! Creates a new user with the given \a username and \a password. Returns the \l UserError to inform about the result. */
-UserManager::UserError UserManager::createUser(const QString &username, const QString &password)
+UserManager::UserError UserManager::createUser(const QString &username, const QString &password, Types::PermissionScopes scopes)
 {
     if (!validateUsername(username)) {
         qCWarning(dcUserManager) << "Error creating user. Invalid username:" << username;
@@ -166,15 +168,19 @@ UserManager::UserError UserManager::createUser(const QString &username, const QS
 
     QByteArray salt = QUuid::createUuid().toString().remove(QRegExp("[{}]")).toUtf8();
     QByteArray hashedPassword = QCryptographicHash::hash(QString(password + salt).toUtf8(), QCryptographicHash::Sha512).toBase64();
-    QString queryString = QString("INSERT INTO users(username, password, salt) values(\"%1\", \"%2\", \"%3\");")
+    QString queryString = QString("INSERT INTO users(username, password, salt, scopes) values(\"%1\", \"%2\", \"%3\", \"%4\");")
             .arg(username.toLower())
             .arg(QString::fromUtf8(hashedPassword))
-            .arg(QString::fromUtf8(salt));
+            .arg(QString::fromUtf8(salt))
+            .arg(Types::scopesToStringList(scopes).join(','));
     m_db.exec(queryString);
     if (m_db.lastError().type() != QSqlError::NoError) {
         qCWarning(dcUserManager) << "Error creating user:" << m_db.lastError().databaseText() << m_db.lastError().driverText();
         return UserErrorBackendError;
     }
+
+    qCInfo(dcUserManager()) << "New user" << username << "added to the system with permissions:" << Types::scopesToStringList(scopes);
+    emit userAdded(username);
     return UserErrorNoError;
 }
 
@@ -226,6 +232,21 @@ UserManager::UserError UserManager::removeUser(const QString &username)
     QString dropTokensQuery = QString("DELETE FROM tokens WHERE lower(username) = \"%1\";").arg(username.toLower());
     m_db.exec(dropTokensQuery);
 
+    emit userRemoved(username);
+    return UserErrorNoError;
+}
+
+UserManager::UserError UserManager::setUserScopes(const QString &username, Types::PermissionScopes scopes)
+{
+    QString scopesString = Types::scopesToStringList(scopes).join(',');
+    QString setScopesQuery = QString("UPDATE users SET scopes = '%1' WHERE username = '%2'").arg(scopesString).arg(username);
+    QSqlQuery result = m_db.exec(setScopesQuery);
+    if (result.lastError().type() != QSqlError::NoError) {
+        qCWarning(dcUserManager()) << "Error updating scopes for user" << username << m_db.lastError().databaseText() << m_db.lastError().driverText();
+        return UserErrorBackendError;
+    }
+
+    emit userChanged(username);
     return UserErrorNoError;
 }
 
@@ -309,30 +330,28 @@ void UserManager::cancelPushButtonAuth(int transactionId)
 
 }
 
-UserInfo UserManager::userInfo(const QByteArray &token) const
+/*! Request UserInfo.
+ The UserInfo for the given username is returned.
+*/
+UserInfo UserManager::userInfo(const QString &username) const
 {
-    TokenInfo tokenInfo = this->tokenInfo(token);
 
-    if (tokenInfo.id().isNull()) {
-        qCWarning(dcUserManager) << "Cannot fetch user info for invalid token:" << token;
-        return UserInfo();
-    }
-
-    // OK, this seems pointless, but data structures are prepared to have more details about users than just the username
-    // i.e. permissions etc will be in here at some point
-    QString getUserQuery = QString("SELECT username FROM users WHERE lower(username) = \"%1\";")
-            .arg(tokenInfo.username().toLower());
+    QString getUserQuery = QString("SELECT username, scopes FROM users WHERE lower(username) = \"%1\";")
+            .arg(username);
     QSqlQuery result = m_db.exec(getUserQuery);
     if (m_db.lastError().type() != QSqlError::NoError) {
-        qCWarning(dcUserManager) << "Query for token failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getUserQuery;
+        qCWarning(dcUserManager) << "Query for user" << username << "failed:" << m_db.lastError().databaseText() << m_db.lastError().driverText() << getUserQuery;
         return UserInfo();
     }
 
     if (!result.first()) {
         return UserInfo();
     }
-    return UserInfo(result.value("username").toString());
 
+    UserInfo userInfo = UserInfo(result.value("username").toString());
+    userInfo.setScopes(Types::scopesFromStringList(result.value("scopes").toString().split(',')));
+
+    return userInfo;
 }
 
 QList<TokenInfo> UserManager::tokens(const QString &username) const
@@ -441,15 +460,38 @@ bool UserManager::initDB()
     m_db.close();
 
     if (!m_db.open()) {
-        qCWarning(dcUserManager()) << "Can't open user database. Init failed.";
+        dumpDBError("Can't open user database. Init failed.");
         return false;
+    }
+
+    int currentVersion = -1;
+    int newVersion = 1;
+    if (m_db.tables().contains("metadata")) {
+        QSqlQuery query = m_db.exec("SELECT data FROM metadata WHERE `key` = 'version';");
+        if (query.next()) {
+            currentVersion = query.value("data").toInt();
+        }
     }
 
     if (!m_db.tables().contains("users")) {
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
-        m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE, password VARCHAR(100), salt VARCHAR(100));");
+        m_db.exec("CREATE TABLE users (username VARCHAR(40) UNIQUE PRIMARY KEY, password VARCHAR(100), salt VARCHAR(100), scopes TEXT);");
         if (m_db.lastError().isValid()) {
-            qCWarning(dcUserManager) << "Error initualizing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            dumpDBError("Error initializing user database (table users).");
+            m_db.close();
+            return false;
+        }
+    } else if (currentVersion < 1) {
+        m_db.exec("ALTER TABLE users ADD COLUMN scopes TEXT;");
+        if (m_db.lastError().isValid()) {
+            dumpDBError("Error migrating user database (table users).");
+            m_db.close();
+            return false;
+        }
+        // Migrated existing users from before multiuser support are admins by default
+        m_db.exec(QString("UPDATE users SET scopes = '%1';").arg(Types::scopesToStringList(Types::PermissionScopeAdmin).join(',')));
+        if (m_db.lastError().isValid()) {
+            dumpDBError("Error migrating user database (updating existing users).");
             m_db.close();
             return false;
         }
@@ -459,10 +501,36 @@ bool UserManager::initDB()
         qCDebug(dcUserManager()) << "Empty user database. Setting up metadata...";
         m_db.exec("CREATE TABLE tokens (id VARCHAR(40) UNIQUE, username VARCHAR(40), token VARCHAR(100) UNIQUE, creationdate DATETIME, devicename VARCHAR(40));");
         if (m_db.lastError().isValid()) {
-            qCWarning(dcUserManager()) << "Error initializing user database. Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
+            dumpDBError("Error initializing user database (table tokens).");
             m_db.close();
             return false;
         }
+    }
+
+    if (m_db.tables().contains("metadata")) {
+        if (currentVersion < newVersion) {
+            m_db.exec(QString("UPDATE metadata SET data = %1 WHERE `key` = 'version')").arg(newVersion));
+            if (m_db.lastError().isValid()) {
+                dumpDBError("Error updating up user database schema version!");
+                m_db.close();
+                return false;
+            }
+            qCInfo(dcUserManager()) << "Successfully migrated user database.";
+        }
+    } else {
+        m_db.exec("CREATE TABLE metadata (`key` VARCHAR(10), data VARCHAR(40));");
+        if (m_db.lastError().isValid()) {
+            dumpDBError("Error setting up user database (table metadata)!");
+            m_db.close();
+            return false;
+        }
+        m_db.exec(QString("INSERT INTO metadata (`key`, `data`) VALUES ('version', %1);").arg(newVersion));
+        if (m_db.lastError().isValid()) {
+            dumpDBError("Error setting up user database (setting version metadata)!");
+            m_db.close();
+            return false;
+        }
+        qCInfo(dcUserManager()) << "Successfully initialized user database.";
     }
 
     qCDebug(dcUserManager()) << "User database initialized successfully.";
@@ -511,6 +579,11 @@ bool UserManager::validateToken(const QByteArray &token) const
 {
     QRegExp validator(QRegExp("(^[a-zA-Z0-9_\\.+-/=]+$)"));
     return validator.exactMatch(token);
+}
+
+void UserManager::dumpDBError(const QString &message)
+{
+    qCCritical(dcUserManager) << message << "Driver error:" << m_db.lastError().driverText() << "Database error:" << m_db.lastError().databaseText();
 }
 
 void UserManager::onPushButtonPressed()

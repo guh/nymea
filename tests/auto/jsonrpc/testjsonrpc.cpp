@@ -236,8 +236,8 @@ void TestJSONRPC::testHandshakeLocale()
 
 void TestJSONRPC::testInitialSetup()
 {
-    foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
-        NymeaCore::instance()->userManager()->removeUser(user);
+    foreach (const UserInfo &userInfo, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(userInfo.username());
     }
     NymeaCore::instance()->userManager()->removeUser("");
 
@@ -1185,8 +1185,8 @@ void TestJSONRPC::testPushButtonAuthConnectionDrop()
 
 void TestJSONRPC::testInitialSetupWithPushButtonAuth()
 {
-    foreach (const QString &user, NymeaCore::instance()->userManager()->users()) {
-        NymeaCore::instance()->userManager()->removeUser(user);
+    foreach (const UserInfo &userInfo, NymeaCore::instance()->userManager()->users()) {
+        NymeaCore::instance()->userManager()->removeUser(userInfo.username());
     }
     NymeaCore::instance()->userManager()->removeUser("");
     QVERIFY(NymeaCore::instance()->userManager()->initRequired());

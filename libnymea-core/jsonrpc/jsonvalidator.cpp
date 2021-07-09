@@ -179,7 +179,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
 
                 QVariantList enumList = refDefinition.toList();
                 if (!enumList.contains(value.toString())) {
-                    return Result(false, "Expected enum " + refName + " but got " + value.toJsonDocument().toJson());
+                    return Result(false, "Expected enum value for" + refName + " but got " + value.toString());
                 }
                 return Result(true);
             }
@@ -187,7 +187,7 @@ JsonValidator::Result JsonValidator::validateEntry(const QVariant &value, const 
             QVariantMap flags = api.value("flags").toMap();
             if (flags.contains(refName)) {
                 QVariant refDefinition = flags.value(refName);
-                if (value.type() != QVariant::StringList) {
+                if (value.type() != QVariant::List && value.type() != QVariant::StringList) {
                     return Result(false, "Expected flags " + refName + " but got " + value.toString());
                 }
                 QString flagEnum = refDefinition.toList().first().toString();

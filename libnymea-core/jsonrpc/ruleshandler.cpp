@@ -107,7 +107,7 @@ RulesHandler::RulesHandler(QObject *parent) :
     description = "Get the descriptions of all configured rules. If you need more information about a specific rule use the "
                    "method Rules.GetRuleDetails.";
     returns.insert("ruleDescriptions", QVariantList() << objectRef("RuleDescription"));
-    registerMethod("GetRules", description, params, returns);
+    registerMethod("GetRules", description, params, returns, Types::PermissionScopeConfigureRules);
 
     params.clear(); returns.clear();
     description = "Get details for the rule identified by ruleId";

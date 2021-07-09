@@ -134,9 +134,9 @@ void TestUsermanager::initTestCase()
 void TestUsermanager::init()
 {
     UserManager *userManager = NymeaCore::instance()->userManager();
-    foreach (const QString &user, userManager->users()) {
-        qCDebug(dcTests()) << "Removing user" << user;
-        userManager->removeUser(user);
+    foreach (const UserInfo &userInfo, userManager->users()) {
+        qCDebug(dcTests()) << "Removing user" << userInfo.username();
+        userManager->removeUser(userInfo.username());
     }
     userManager->removeUser("");
 
@@ -184,7 +184,7 @@ void TestUsermanager::loginValidation()
     QFETCH(UserManager::UserError, expectedError);
 
     UserManager *userManager = NymeaCore::instance()->userManager();
-    UserManager::UserError error = userManager->createUser(username, password);
+    UserManager::UserError error = userManager->createUser(username, password, Types::PermissionScopeAdmin);
     qDebug() << "Error:" << error << "Expected:" << expectedError;
     QCOMPARE(error, expectedError);
 

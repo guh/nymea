@@ -147,12 +147,13 @@ void JsonHandler::registerObject(const QString &name, const QVariantMap &object)
     m_objects.insert(name, object);
 }
 
-void JsonHandler::registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, const QString &deprecationInfo)
+void JsonHandler::registerMethod(const QString &name, const QString &description, const QVariantMap &params, const QVariantMap &returns, Types::PermissionScope permissionScope, const QString &deprecationInfo)
 {
     QVariantMap methodData;
     methodData.insert("description", description);
     methodData.insert("params", params);
     methodData.insert("returns", returns);
+    methodData.insert("permissionScope", permissionScope);
     if (!deprecationInfo.isEmpty()) {
         methodData.insert("deprecated", deprecationInfo);
     }
@@ -285,7 +286,8 @@ QVariant JsonHandler::pack(const QMetaObject &metaObject, const void *value) con
                 int flagValue = propertyValue.toInt();
                 QStringList flags;
                 for (int i = 0; i < metaFlag.keyCount(); i++) {
-                    if ((metaFlag.value(i) & flagValue) > 0) {
+                    int flag = metaFlag.value(i) & flagValue;
+                    if (flag == metaFlag.value(i) && flag > 0) {
                         flags.append(metaFlag.key(i));
                     }
                 }

@@ -95,6 +95,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     registerEnum<BasicType>();
     registerEnum<UserManager::UserError>();
     registerEnum<CloudManager::CloudConnectionState>();
+    registerEnum<Types::PermissionScope, Types::PermissionScopes>();
 
     // Objects
     registerObject<TokenInfo>();
@@ -122,7 +123,9 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
                             "like initialSetupRequired might change if the setup has been performed in the meantime.\n "
                             "The field cacheHashes may contain a map of methods and MD5 hashes. As long as the hash for "
                             "a method does not change, a client may use a previously cached copy of the call instead of "
-                            "fetching the content again.";
+                            "fetching the content again. While the Hello call doesn't necessarily require a token, this "
+                            "can be called with a token. If the token is valid, the reyponse will contain information about "
+                            "the user and permissions for the given token.";
     params.insert("o:locale", enumValueName(String));
     returns.insert("server", enumValueName(String));
     returns.insert("name", enumValueName(String));
@@ -136,14 +139,16 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("pushButtonAuthAvailable", enumValueName(Bool));
     returns.insert("o:experiences", QVariantList() << objectRef("Experience"));
     returns.insert("o:cacheHashes", QVariantList() << objectRef("CacheHash"));
-    registerMethod("Hello", description, params, returns);
+    returns.insert("o:permissionScopes", enumRef<Types::PermissionScopes>());
+    returns.insert("o:username", enumValueName(String));
+    registerMethod("Hello", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Introspect this API.";
     returns.insert("methods", enumValueName(Object));
     returns.insert("notifications", enumValueName(Object));
     returns.insert("types", enumValueName(Object));
-    registerMethod("Introspect", description, params, returns);
+    registerMethod("Introspect", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Version of this nymea/JSONRPC interface.";
@@ -151,7 +156,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     returns.insert("protocol version", enumValueName(String));
     returns.insert("qtVersion", enumValueName(String));
     returns.insert("qtBuildVersion", enumValueName(String));
-    registerMethod("Version", description, params, returns);
+    registerMethod("Version", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Enable/Disable notifications for this connections. Either \"enabled\" or """
@@ -166,14 +171,14 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("d:o:enabled", enumValueName(Bool));
     returns.insert("namespaces", enumValueName(StringList));
     returns.insert("d:enabled", enumValueName(Bool));
-    registerMethod("SetNotificationStatus", description, params, returns);
+    registerMethod("SetNotificationStatus", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Create a new user in the API. Currently this is only allowed to be called once when a new nymea instance is set up. Call Authenticate after this to obtain a device token for this user.";
     params.insert("username", enumValueName(String));
     params.insert("password", enumValueName(String));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("CreateUser", description, params, returns, "Use Users.CreateUser instead.");
+    registerMethod("CreateUser", description, params, returns, Types::PermissionScopeAdmin, "Use Users.CreateUser instead.");
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via user & password challenge. Provide "
@@ -185,7 +190,9 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("deviceName", enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     returns.insert("o:token", enumValueName(String));
-    registerMethod("Authenticate", description, params, returns, "Use Users.Authenticate instead.");
+    returns.insert("o:username", enumValueName(String));
+    returns.insert("o:scopes", enumRef<Types::PermissionScopes>());
+    registerMethod("Authenticate", description, params, returns, Types::PermissionScopeNone, "Use Users.Authenticate instead.");
 
     params.clear(); returns.clear();
     description = "Authenticate a client to the api via Push Button method. "
@@ -204,18 +211,18 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("deviceName", enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     returns.insert("transactionId", enumValueName(Int));
-    registerMethod("RequestPushButtonAuth", description, params, returns, "Use Users.RequestPushButtonAuth instead.");
+    registerMethod("RequestPushButtonAuth", description, params, returns, Types::PermissionScopeNone, "Use Users.RequestPushButtonAuth instead.");
 
     params.clear(); returns.clear();
     description = "Return a list of TokenInfo objects of all the tokens for the current user.";
     returns.insert("tokenInfoList", QVariantList() << objectRef("TokenInfo"));
-    registerMethod("Tokens", description, params, returns, "Use Users.GetTokens instead.");
+    registerMethod("Tokens", description, params, returns, Types::PermissionScopeNone, "Use Users.GetTokens instead.");
 
     params.clear(); returns.clear();
     description = "Revoke access for a given token.";
     params.insert("tokenId", enumValueName(Uuid));
     returns.insert("error", enumRef<UserManager::UserError>());
-    registerMethod("RemoveToken", description, params, returns, "Use Users.RemoveToken instead.");
+    registerMethod("RemoveToken", description, params, returns, Types::PermissionScopeNone, "Use Users.RemoveToken instead.");
 
     params.clear(); returns.clear();
     description = "Sets up the cloud connection by deploying a certificate and its configuration.";
@@ -246,7 +253,7 @@ JsonRPCServerImplementation::JsonRPCServerImplementation(const QSslConfiguration
     params.insert("sessionId", enumValueName(String));
     returns.insert("success", enumValueName(Bool));
     returns.insert("sessionId", enumValueName(String));
-    registerMethod("KeepAlive", description, params, returns);
+    registerMethod("KeepAlive", description, params, returns, Types::PermissionScopeNone);
 
     // Notifications
     params.clear(); returns.clear();
@@ -290,7 +297,51 @@ JsonReply *JsonRPCServerImplementation::Hello(const QVariantMap &params, const J
         delete m_newConnectionWaitTimers.take(clientId);
     }
 
-    return createReply(createWelcomeMessage(interface, clientId));
+    // Compose the reply
+    QVariantMap handshake;
+    handshake.insert("server", "nymea");
+    handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
+    handshake.insert("version", NYMEA_VERSION_STRING);
+    handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
+    // "language" is deprecated
+    handshake.insert("language", m_clientLocales.value(clientId).name());
+    handshake.insert("locale", m_clientLocales.value(clientId).name());
+    handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
+    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
+    handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
+    handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
+    if (!m_experiences.isEmpty()) {
+        QVariantList experiences;
+        foreach (JsonHandler* handler, m_experiences.keys()) {
+            QVariantMap experience;
+            experience.insert("name", handler->name());
+            experience.insert("version", m_experiences.value(handler));
+            experiences.append(experience);
+        }
+        handshake.insert("experiences", experiences);
+    }
+    QVariantList cacheHashes;
+    foreach (const QString &handlerName, m_handlers.keys()) {
+        QHash<QString, QString> hashes = m_handlers.value(handlerName)->cacheHashes();
+        foreach (const QString &hashName, hashes.keys()) {
+            QVariantMap cacheHash;
+            cacheHash.insert("method", handlerName + "." + hashName);
+            cacheHash.insert("hash", hashes.value(hashName));
+            cacheHashes.append(cacheHash);
+        }
+    }
+    if (!cacheHashes.isEmpty()) {
+        handshake.insert("cacheHashes", cacheHashes);
+    }
+
+    if (!context.token().isEmpty()) {
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(context.token());
+        UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+        handshake.insert("permissionScopes", Types::scopesToStringList(userInfo.scopes()));
+        handshake.insert("username", userInfo.username());
+    }
+
+    return createReply(handshake);
 }
 
 JsonReply* JsonRPCServerImplementation::Introspect(const QVariantMap &params) const
@@ -343,7 +394,7 @@ JsonReply *JsonRPCServerImplementation::CreateUser(const QVariantMap &params)
     QString username = params.value("username").toString();
     QString password = params.value("password").toString();
 
-    UserManager::UserError status = NymeaCore::instance()->userManager()->createUser(username, password);
+    UserManager::UserError status = NymeaCore::instance()->userManager()->createUser(username, password, Types::PermissionScopeAdmin);
 
     QVariantMap returns;
     returns.insert("error", enumValueName<UserManager::UserError>(status));
@@ -361,6 +412,10 @@ JsonReply *JsonRPCServerImplementation::Authenticate(const QVariantMap &params)
     ret.insert("success", !token.isEmpty());
     if (!token.isEmpty()) {
         ret.insert("token", token);
+        TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+        UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+        ret.insert("username", userInfo.username());
+        ret.insert("scopes", Types::scopesToStringList(userInfo.scopes()));
     }
     return createReply(ret);
 }
@@ -543,46 +598,6 @@ void JsonRPCServerImplementation::sendUnauthorizedResponse(TransportInterface *i
     interface->sendData(clientId, data);
 }
 
-QVariantMap JsonRPCServerImplementation::createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const
-{
-    QVariantMap handshake;
-    handshake.insert("server", "nymea");
-    handshake.insert("name", NymeaCore::instance()->configuration()->serverName());
-    handshake.insert("version", NYMEA_VERSION_STRING);
-    handshake.insert("uuid", NymeaCore::instance()->configuration()->serverUuid().toString());
-    // "language" is deprecated
-    handshake.insert("language", m_clientLocales.value(clientId).name());
-    handshake.insert("locale", m_clientLocales.value(clientId).name());
-    handshake.insert("protocol version", JSON_PROTOCOL_VERSION);
-    handshake.insert("initialSetupRequired", (interface->configuration().authenticationEnabled ? NymeaCore::instance()->userManager()->initRequired() : false));
-    handshake.insert("authenticationRequired", interface->configuration().authenticationEnabled);
-    handshake.insert("pushButtonAuthAvailable", NymeaCore::instance()->userManager()->pushButtonAuthAvailable());
-    if (!m_experiences.isEmpty()) {
-        QVariantList experiences;
-        foreach (JsonHandler* handler, m_experiences.keys()) {
-            QVariantMap experience;
-            experience.insert("name", handler->name());
-            experience.insert("version", m_experiences.value(handler));
-            experiences.append(experience);
-        }
-        handshake.insert("experiences", experiences);
-    }
-    QVariantList cacheHashes;
-    foreach (const QString &handlerName, m_handlers.keys()) {
-        QHash<QString, QString> hashes = m_handlers.value(handlerName)->cacheHashes();
-        foreach (const QString &hashName, hashes.keys()) {
-            QVariantMap cacheHash;
-            cacheHash.insert("method", handlerName + "." + hashName);
-            cacheHash.insert("hash", hashes.value(hashName));
-            cacheHashes.append(cacheHash);
-        }
-    }
-    if (!cacheHashes.isEmpty()) {
-        handshake.insert("cacheHashes", cacheHashes);
-    }
-    return handshake;
-}
-
 void JsonRPCServerImplementation::setup()
 {
     registerHandler(this);
@@ -654,7 +669,8 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         return;
     }
 
-    QStringList commandList = message.value("method").toString().split('.');
+    QString methodString = message.value("method").toString();
+    QStringList commandList = methodString.split('.');
     if (commandList.count() != 2) {
         qCWarning(dcJsonRpc) << "Error parsing method.\nGot:" << message.value("method").toString() << "\nExpected: \"Namespace.method\"";
         sendErrorResponse(interface, clientId, commandId, QString("Error parsing method. Got: '%1'', Expected: 'Namespace.method'").arg(message.value("method").toString()));
@@ -668,9 +684,9 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
         QByteArray token = message.value("token").toByteArray();
         QStringList authExemptMethodsNoUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.RequestPushButtonAuth", "JSONRPC.CreateUser", "Users.RequestPushButtonAuth", "Users.CreateUser"};
         QStringList authExemptMethodsWithUser = {"JSONRPC.Introspect", "JSONRPC.Hello", "JSONRPC.Authenticate", "JSONRPC.RequestPushButtonAuth", "Users.Authenticate", "Users.RequestPushButtonAuth"};
-        // if there is no user in the system yet, let's fail unless this is special method for authentication itself
+        // if there is no user in the system yet, let's fail unless this is a special method for authentication itself
         if (NymeaCore::instance()->userManager()->initRequired()) {
-            if (!authExemptMethodsNoUser.contains(targetNamespace + "." + method) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
+            if (!authExemptMethodsNoUser.contains(methodString) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
                 sendUnauthorizedResponse(interface, clientId, commandId, "Initial setup required. Call Users.CreateUser first.");
                 qCWarning(dcJsonRpc()) << "Initial setup required but client does not call the setup. Dropping connection.";
                 interface->terminateClientConnection(clientId);
@@ -678,11 +694,22 @@ void JsonRPCServerImplementation::processJsonPacket(TransportInterface *interfac
             }
         } else {
             // ok, we have a user. if there isn't a valid token, let's fail unless this is a Authenticate, Introspect  Hello call
-            if (!authExemptMethodsWithUser.contains(targetNamespace + "." + method) && (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token))) {
-                sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
-                qCWarning(dcJsonRpc()) << "Client did not not present a valid token. Dropping connection.";
-                interface->terminateClientConnection(clientId);
-                return;
+            if (!authExemptMethodsWithUser.contains(methodString)) {
+                if (token.isEmpty() || !NymeaCore::instance()->userManager()->verifyToken(token)) {
+                    sendUnauthorizedResponse(interface, clientId, commandId, "Forbidden: Invalid token.");
+                    qCWarning(dcJsonRpc()) << "Client did not not present a valid token. Dropping connection.";
+                    interface->terminateClientConnection(clientId);
+                    return;
+                }
+                // Check if the user has the required permissions
+                TokenInfo tokenInfo = NymeaCore::instance()->userManager()->tokenInfo(token);
+                UserInfo userInfo = NymeaCore::instance()->userManager()->userInfo(tokenInfo.username());
+                Types::PermissionScope methodScope = static_cast<Types::PermissionScope>(m_api.value("methods").toMap().value(methodString).toMap().value("permissionScope").toInt());
+                if (methodScope != Types::PermissionScopeNone && !userInfo.scopes().testFlag(Types::PermissionScopeAdmin) && !userInfo.scopes().testFlag(methodScope)) {
+                    qCWarning(dcJsonRpc()) << "Method" << methodString << "requires" << Types::scopeToString(methodScope) << "but client token has:" << Types::scopesToStringList(userInfo.scopes());
+                    sendErrorResponse(interface, clientId, commandId, "Permission denied.");
+                    return;
+                }
             }
         }
     }

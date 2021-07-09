@@ -59,11 +59,12 @@ public:
     explicit UserManager(const QString &dbName, QObject *parent = nullptr);
 
     bool initRequired() const;
-    QStringList users() const;
+    UserInfoList users() const;
 
-    UserError createUser(const QString &username, const QString &password);
+    UserError createUser(const QString &username, const QString &password, Types::PermissionScopes scopes);
     UserError changePassword(const QString &username, const QString &newPassword);
     UserError removeUser(const QString &username);
+    UserError setUserScopes(const QString &username, Types::PermissionScopes scopes);
 
     bool pushButtonAuthAvailable() const;
 
@@ -71,7 +72,7 @@ public:
     int requestPushButtonAuth(const QString &deviceName);
     void cancelPushButtonAuth(int transactionId);
 
-    UserInfo userInfo(const QByteArray &token) const;
+    UserInfo userInfo(const QString &username = QString()) const;
     TokenInfo tokenInfo(const QByteArray &token) const;
     TokenInfo tokenInfo(const QUuid &tokenId) const;
     QList<TokenInfo> tokens(const QString &username) const;
@@ -82,6 +83,9 @@ public:
     bool verifyToken(const QByteArray &token);
 
 signals:
+    void userAdded(const QString &username);
+    void userRemoved(const QString &username);
+    void userChanged(const QString &username);
     void pushButtonAuthFinished(int transactionId, bool success, const QByteArray &token);
 
 private:
@@ -90,6 +94,8 @@ private:
     bool validateUsername(const QString &username) const;
     bool validatePassword(const QString &password) const;
     bool validateToken(const QByteArray &token) const;
+
+    void dumpDBError(const QString &message);
 
 private slots:
     void onPushButtonPressed();

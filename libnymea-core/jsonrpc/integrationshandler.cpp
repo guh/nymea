@@ -102,7 +102,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     QString description; QVariantMap returns; QVariantMap params;
     description = "Returns a list of supported Vendors.";
     returns.insert("vendors", objectRef<Vendors>());
-    registerMethod("GetVendors", description, params, returns);
+    registerMethod("GetVendors", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Returns a list of supported thing classes, optionally filtered by vendorId or by a list of thing class ids.";
@@ -110,26 +110,26 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("o:thingClassIds", QVariantList() << enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:thingClasses", objectRef<ThingClasses>());
-    registerMethod("GetThingClasses", description, params, returns);
+    registerMethod("GetThingClasses", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Returns a list of loaded plugins.";
     returns.insert("plugins", objectRef<IntegrationPlugins>());
-    registerMethod("GetPlugins", description, params, returns);
+    registerMethod("GetPlugins", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get a plugin's params.";
     params.insert("pluginId", enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:configuration", objectRef<ParamList>());
-    registerMethod("GetPluginConfiguration", description, params, returns);
+    registerMethod("GetPluginConfiguration", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Set a plugin's params.";
     params.insert("pluginId", enumValueName(Uuid));
     params.insert("configuration", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("SetPluginConfiguration", description, params, returns);
+    registerMethod("SetPluginConfiguration", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Add a new thing to the system. "
@@ -146,7 +146,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:thingId", enumValueName(Uuid));
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("AddThing", description, params, returns);
+    registerMethod("AddThing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Pair a new thing. "
@@ -178,7 +178,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("o:oAuthUrl", enumValueName(String));
     returns.insert("o:pin", enumValueName(String));
-    registerMethod("PairThing", description, params, returns);
+    registerMethod("PairThing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Confirm an ongoing pairing. For SetupMethodUserAndPassword, provide the username in the \"username\" field "
@@ -191,14 +191,14 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("o:thingId", enumValueName(Uuid));
-    registerMethod("ConfirmPairing", description, params, returns);
+    registerMethod("ConfirmPairing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Returns a list of configured things, optionally filtered by thingId.";
     params.insert("o:thingId", enumValueName(Uuid));
     returns.insert("o:things", objectRef<Things>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("GetThings", description, params, returns);
+    registerMethod("GetThings", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Performs a thing discovery for things of the given thingClassId and returns the results. "
@@ -211,7 +211,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("o:thingDescriptors", objectRef<ThingDescriptors>());
-    registerMethod("DiscoverThings", description, params, returns);
+    registerMethod("DiscoverThings", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Reconfigure a thing. This comes down to removing and recreating a thing with new parameters "
@@ -226,21 +226,21 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("o:thingParams", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ReconfigureThing", description, params, returns);
+    registerMethod("ReconfigureThing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Edit the name of a thing.";
     params.insert("thingId", enumValueName(Uuid));
     params.insert("name", enumValueName(String));
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("EditThing", description, params, returns);
+    registerMethod("EditThing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Change the settings of a thing.";
     params.insert("thingId", enumValueName(Uuid));
     params.insert("settings", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("SetThingSettings", description, params, returns);
+    registerMethod("SetThingSettings", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Enable/disable logging for the given event type on the given thing.";
@@ -248,7 +248,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("eventTypeId", enumValueName(Uuid));
     params.insert("enabled", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("SetEventLogging", description, params, returns);
+    registerMethod("SetEventLogging", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Set the filter for the given state on the given thing.";
@@ -256,7 +256,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("stateTypeId", enumValueName(Uuid));
     params.insert("filter", enumRef<Types::StateValueFilter>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("SetStateFilter", description, params, returns);
+    registerMethod("SetStateFilter", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Remove a thing from the system.";
@@ -270,25 +270,25 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("o:removePolicyList", removePolicyList);
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:ruleIds", QVariantList() << enumValueName(Uuid));
-    registerMethod("RemoveThing", description, params, returns);
+    registerMethod("RemoveThing", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Get event types for a specified thingClassId.";
     params.insert("thingClassId", enumValueName(Uuid));
     returns.insert("eventTypes", objectRef<EventTypes>());
-    registerMethod("GetEventTypes", description, params, returns);
+    registerMethod("GetEventTypes", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get action types for a specified thingClassId.";
     params.insert("thingClassId", enumValueName(Uuid));
     returns.insert("actionTypes", objectRef<ActionTypes>());
-    registerMethod("GetActionTypes", description, params, returns);
+    registerMethod("GetActionTypes", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get state types for a specified thingClassId.";
     params.insert("thingClassId", enumValueName(Uuid));
     returns.insert("stateTypes", objectRef<StateTypes>());
-    registerMethod("GetStateTypes", description, params, returns);
+    registerMethod("GetStateTypes", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get the value of the given thing and the given stateType";
@@ -296,14 +296,14 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("stateTypeId", enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:value", enumValueName(Variant));
-    registerMethod("GetStateValue", description, params, returns);
+    registerMethod("GetStateValue", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get all the state values of the given thing.";
     params.insert("thingId", enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:values", objectRef<States>());
-    registerMethod("GetStateValues", description, params, returns);
+    registerMethod("GetStateValues", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Browse a thing. "
@@ -318,7 +318,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("items", QVariantList() << objectRef("BrowserItem"));
-    registerMethod("BrowseThing", description, params, returns);
+    registerMethod("BrowseThing", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Get a single item from the browser. "
@@ -332,7 +332,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
     returns.insert("o:item", objectRef("BrowserItem"));
-    registerMethod("GetBrowserItem", description, params, returns);
+    registerMethod("GetBrowserItem", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Execute a single action.";
@@ -341,7 +341,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ExecuteAction", description, params, returns);
+    registerMethod("ExecuteAction", description, params, returns, Types::PermissionScopeControlThings);
 
     params.clear(); returns.clear();
     description = "Execute the item identified by itemId on the given thing.\n"
@@ -352,7 +352,7 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("itemId", enumValueName(String));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ExecuteBrowserItem", description, params, returns);
+    registerMethod("ExecuteBrowserItem", description, params, returns, Types::PermissionScopeControlThings);
 
     params.clear(); returns.clear();
     description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given thing.\n"
@@ -365,13 +365,13 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ExecuteBrowserItemAction", description, params, returns);
+    registerMethod("ExecuteBrowserItemAction", description, params, returns, Types::PermissionScopeControlThings);
 
     params.clear(); returns.clear();
     description = "Fetch IO connections. Optionally filtered by thingId and stateTypeId.";
     params.insert("o:thingId", enumValueName(Uuid));
     returns.insert("ioConnections", objectRef<IOConnections>());
-    registerMethod("GetIOConnections", description, params, returns);
+    registerMethod("GetIOConnections", description, params, returns, Types::PermissionScopeNone);
 
     params.clear(); returns.clear();
     description = "Connect two generic IO states. Input and output need to be compatible, that is, either a digital input "
@@ -383,13 +383,13 @@ IntegrationsHandler::IntegrationsHandler(ThingManager *thingManager, QObject *pa
     params.insert("o:inverted", enumValueName(Bool));
     returns.insert("thingError", enumRef<Thing::ThingError>());
     returns.insert("o:ioConnectionId", enumValueName(Uuid));
-    registerMethod("ConnectIO", description, params, returns);
+    registerMethod("ConnectIO", description, params, returns, Types::PermissionScopeConfigureThings);
 
     params.clear(); returns.clear();
     description = "Disconnect an existing IO connection.";
     params.insert("ioConnectionId", enumValueName(Uuid));
     returns.insert("thingError", enumRef<Thing::ThingError>());
-    registerMethod("DisconnectIO", description, params, returns);
+    registerMethod("DisconnectIO", description, params, returns, Types::PermissionScopeConfigureThings);
 
 
     // Notifications

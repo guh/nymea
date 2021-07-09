@@ -63,21 +63,21 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:displayMessage", enumValueName(String));
-    registerMethod("ExecuteAction", description, params, returns, "Please use Integrations.ExecuteAction instead.");
+    registerMethod("ExecuteAction", description, params, returns, Types::PermissionScopeControlThings, "Please use Integrations.ExecuteAction instead.");
 
     params.clear(); returns.clear();
     description = "Get the ActionType for the given ActionTypeId.";
     params.insert("actionTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:actionType", objectRef<ActionType>());
-    registerMethod("GetActionType", description, params, returns, "Please use the Integrations namespace instead.");
+    registerMethod("GetActionType", description, params, returns, Types::PermissionScopeControlThings, "Please use the Integrations namespace instead.");
 
     params.clear(); returns.clear();
     description = "Execute the item identified by itemId on the given device.";
     params.insert("deviceId", enumValueName(Uuid));
     params.insert("itemId", enumValueName(String));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    registerMethod("ExecuteBrowserItem", description, params, returns, "Please use Integrations.ExecuteBrowserItem instead.");
+    registerMethod("ExecuteBrowserItem", description, params, returns, Types::PermissionScopeControlThings, "Please use Integrations.ExecuteBrowserItem instead.");
 
     params.clear(); returns.clear();
     description = "Execute the action for the browser item identified by actionTypeId and the itemId on the given device.";
@@ -86,7 +86,7 @@ ActionHandler::ActionHandler(QObject *parent) :
     params.insert("actionTypeId", enumValueName(Uuid));
     params.insert("o:params", objectRef<ParamList>());
     returns.insert("deviceError", enumRef<Device::DeviceError>());
-    registerMethod("ExecuteBrowserItemAction", description, params, returns, "Please use Integrations.ExecuteBrowserItem instead.");
+    registerMethod("ExecuteBrowserItemAction", description, params, returns, Types::PermissionScopeControlThings, "Please use Integrations.ExecuteBrowserItem instead.");
 
 }
 

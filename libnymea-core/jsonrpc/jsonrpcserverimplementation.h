@@ -90,7 +90,6 @@ private:
     void sendResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QVariantMap &params = QVariantMap(), const QString &deprecationWarning = QString());
     void sendErrorResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
     void sendUnauthorizedResponse(TransportInterface *interface, const QUuid &clientId, int commandId, const QString &error);
-    QVariantMap createWelcomeMessage(TransportInterface *interface, const QUuid &clientId) const;
 
     void processJsonPacket(TransportInterface *interface, const QUuid &clientId, const QByteArray &data);
 

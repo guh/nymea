@@ -204,6 +204,7 @@ SOURCES += \
     types/event.cpp \
     types/eventdescriptor.cpp \
     types/thingclass.cpp \
+    types/typeutils.cpp \
     types/vendor.cpp \
     types/paramtype.cpp \
     types/param.cpp \

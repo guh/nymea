@@ -53,7 +53,7 @@ EventHandler::EventHandler(QObject *parent) :
     params.insert("eventTypeId", enumValueName(Uuid));
     returns.insert("deviceError", enumRef<Device::DeviceError>());
     returns.insert("o:eventType", objectRef<EventType>());
-    registerMethod("GetEventType", description, params, returns, "Please use the Devices namespace instead.");
+    registerMethod("GetEventType", description, params, returns, Types::PermissionScopeNone, "Please use the Devices namespace instead.");
 
     // Notifications
     params.clear(); returns.clear();

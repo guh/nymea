@@ -92,12 +92,12 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     QString description; QVariantMap params; QVariantMap returns;
     description = "Get the list of available timezones.";
     returns.insert("timeZones", QVariantList() << enumValueName(String));
-    registerMethod("GetTimeZones", description, params, returns, "Use System.GetTimeZones instead.");
+    registerMethod("GetTimeZones", description, params, returns, Types::PermissionScopeNone, "Use System.GetTimeZones instead.");
 
     params.clear(); returns.clear();
     description = "Returns a list of locale codes available for the server. i.e. en_US, de_AT";
     returns.insert("languages", QVariantList() << enumValueName(String));
-    registerMethod("GetAvailableLanguages", description, params, returns, "Use the locale property in the Handshake message instead.");
+    registerMethod("GetAvailableLanguages", description, params, returns, Types::PermissionScopeNone, "Use the locale property in the Handshake message instead.");
 
     params.clear(); returns.clear();
     description = "Get all configuration parameters of the server.";
@@ -135,13 +135,13 @@ ConfigurationHandler::ConfigurationHandler(QObject *parent):
     description = "Set the time zone of the server. See also: \"GetTimeZones\"";
     params.insert("timeZone",  enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetTimeZone", description, params, returns, "Use System.SetTimeZone instead.");
+    registerMethod("SetTimeZone", description, params, returns, Types::PermissionScopeAdmin, "Use System.SetTimeZone instead.");
 
     params.clear(); returns.clear();
     description = "Sets the server language to the given language. See also: \"GetAvailableLanguages\"";
     params.insert("language",  enumValueName(String));
     returns.insert("configurationError", enumRef<NymeaConfiguration::ConfigurationError>());
-    registerMethod("SetLanguage", description, params, returns, "Use the locale property in the Handshake message instead.");
+    registerMethod("SetLanguage", description, params, returns, Types::PermissionScopeAdmin, "Use the locale property in the Handshake message instead.");
 
     params.clear(); returns.clear();
     description = "Enable or disable the debug server.";

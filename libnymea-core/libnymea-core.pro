@@ -125,6 +125,7 @@ HEADERS += nymeacore.h \
     logging/logentry.h \
     logging/logvaluetool.h \
     time/timemanager.h \
+    usermanager/userautorizer.h \
     usermanager/userinfo.h \
     usermanager/usermanager.h \
     usermanager/tokeninfo.h \
@@ -218,6 +219,7 @@ SOURCES += nymeacore.cpp \
     logging/logentry.cpp \
     logging/logvaluetool.cpp \
     time/timemanager.cpp \
+    usermanager/userautorizer.cpp \
     usermanager/userinfo.cpp \
     usermanager/usermanager.cpp \
     usermanager/tokeninfo.cpp \

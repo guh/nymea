@@ -85,7 +85,7 @@ void NymeaTestBase::initTestCase()
 
     // Yes, we're intentionally mixing upper/lower case email here... username should not be case sensitive
     NymeaCore::instance()->userManager()->removeUser("dummy@guh.io");
-    NymeaCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!");
+    NymeaCore::instance()->userManager()->createUser("dummy@guh.io", "DummyPW1!", Types::PermissionScopeAdmin);
     m_apiToken = NymeaCore::instance()->userManager()->authenticate("Dummy@guh.io", "DummyPW1!", "testcase");
 
     if (MockTcpServer::servers().isEmpty()) {

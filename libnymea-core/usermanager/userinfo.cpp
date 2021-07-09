@@ -1,5 +1,9 @@
 #include "userinfo.h"
 
+#include <QMetaEnum>
+
+namespace nymeaserver {
+
 UserInfo::UserInfo()
 {
 
@@ -19,4 +23,26 @@ QString UserInfo::username() const
 void UserInfo::setUsername(const QString &username)
 {
     m_username = username;
+}
+
+Types::PermissionScopes UserInfo::scopes() const
+{
+    return m_scopes;
+}
+
+void UserInfo::setScopes(Types::PermissionScopes scopes)
+{
+    m_scopes = scopes;
+}
+
+QVariant UserInfoList::get(int index) const
+{
+    return QVariant::fromValue(at(index));
+}
+
+void UserInfoList::put(const QVariant &variant)
+{
+    append(variant.value<UserInfo>());
+}
+
 }

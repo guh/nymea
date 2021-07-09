@@ -1,0 +1,10 @@
+{
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "voltage",
+            "type": "double",
+            "unit": "Voltage"
+        }
+    ]
+}

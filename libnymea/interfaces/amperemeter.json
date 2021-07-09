@@ -1,0 +1,10 @@
+{
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "ampere",
+            "type": "double",
+            "unit": "Ampere"
+        }
+    ]
+}

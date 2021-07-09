@@ -1,0 +1,10 @@
+{
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "power",
+            "type": "double",
+            "unit": "KiloWatt"
+        }
+    ]
+}

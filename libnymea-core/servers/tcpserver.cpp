@@ -76,6 +76,11 @@
 #include "tcpserver.h"
 #include "nymeacore.h"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <arpa/inet.h>
+
 #include <QDebug>
 
 namespace nymeaserver {
@@ -175,13 +180,46 @@ void TcpServer::setServerName(const QString &serverName)
  */
 bool TcpServer::startServer()
 {
-    m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
-    if(!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
-        qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
-        delete m_server;
-        m_server = nullptr;
+    // open server and listen on given port
+    int sockfd = 0;
+    struct sockaddr_in serv_addr;
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(sockfd < 0) {
+        qCWarning(dcTcpServer()) << "Cannot create tcp socket";
         return false;
     }
+
+    int flag = 1;
+    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &flag, sizeof(int)) == -1) {
+        qCWarning(dcTcpServer()) << "Cannot set SO_REUSEADDR to tcp socket";
+        return false;
+    }
+
+    memset(&serv_addr, 0, sizeof(struct sockaddr_in));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(configuration().address.toString().toUtf8().data());
+    serv_addr.sin_port = htons(configuration().port);
+
+    if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(sockaddr_in)) < 0) {
+        qCWarning(dcTcpServer()) << "Cannot bind tcp socket" << errno << configuration().address << configuration().port << configuration().address.toIPv4Address() << INADDR_LOOPBACK;
+        return false;
+    }
+
+    if(listen(sockfd,SOMAXCONN) < 0) {
+        qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
+        return false;
+    }
+
+    m_server = new SslServer(configuration().sslEnabled, m_sslConfig);
+
+    m_server->setSocketDescriptor(sockfd);
+
+//    if(!m_server->listen(configuration().address, static_cast<quint16>(configuration().port))) {
+//        qCWarning(dcTcpServer()) << "Tcp server error: can not listen on" << configuration().address.toString() << configuration().port;
+//        delete m_server;
+//        m_server = nullptr;
+//        return false;
+//    }
 
     connect(m_server, SIGNAL(clientConnected(QSslSocket *)), SLOT(onClientConnected(QSslSocket *)));
     connect(m_server, SIGNAL(clientDisconnected(QSslSocket *)), SLOT(onClientDisconnected(QSslSocket *)));

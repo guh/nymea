@@ -5,7 +5,6 @@
         <file>light.json</file>
         <file>dimmablelight.json</file>
         <file>account.json</file>
-        <file>daylightsensor.json</file>
         <file>colortemperaturelight.json</file>
         <file>doorbell.json</file>
         <file>colorlight.json</file>
@@ -31,12 +30,22 @@
         <file>simplemultibutton.json</file>
         <file>longpressmultibutton.json</file>
         <file>sensor.json</file>
+        <file>daylightsensor.json</file>
+        <file>closablesensor.json</file>
+        <file>presencesensor.json</file>
+        <file>watersensor.json</file>
         <file>temperaturesensor.json</file>
         <file>humiditysensor.json</file>
         <file>pressuresensor.json</file>
         <file>moisturesensor.json</file>
-        <file>conductivitysensor.json</file>
         <file>lightsensor.json</file>
+        <file>noisesensor.json</file>
+        <file>windspeedsensor.json</file>
+        <file>co2sensor.json</file>
+        <file>o2sensor.json</file>
+        <file>orpsensor.json</file>
+        <file>conductivitysensor.json</file>
+        <file>phsensor.json</file>
         <file>thermostat.json</file>
         <file>connectable.json</file>
         <file>wirelessconnectable.json</file>
@@ -65,19 +74,13 @@
         <file>useraccesscontrol.json</file>
         <file>heating.json</file>
         <file>evcharger.json</file>
-        <file>noisesensor.json</file>
-        <file>windspeedsensor.json</file>
-        <file>co2sensor.json</file>
-        <file>presencesensor.json</file>
         <file>navigationpad.json</file>
         <file>extendednavigationpad.json</file>
-        <file>closablesensor.json</file>
         <file>powerswitch.json</file>
         <file>barcodescanner.json</file>
         <file>irrigation.json</file>
         <file>venetianblind.json</file>
         <file>update.json</file>
-        <file>watersensor.json</file>
         <file>cleaningrobot.json</file>
         <file>airquality.json</file>
         <file>indoorairquality.json</file>

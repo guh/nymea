@@ -1,0 +1,13 @@
+{
+    "description": "Interface for PH sensors.",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "ph",
+            "type": "double",
+            "minValue": 0,
+            "maxValue": 14,
+            "logged": true
+        }
+    ]
+}

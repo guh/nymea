@@ -1,0 +1,19 @@
+{
+    "description": "Interface for oxygen sensors. O2 saturation in percentage is mandatory, optionally more advanced sensors may offer O2 values in milligrams per liter (mg/L).",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "o2saturation",
+            "type": "double",
+            "unit": "Percentage",
+            "logged": true
+        },
+        {
+            "name": "o2",
+            "type": "double",
+            "unit": "MilligramPerLiter",
+            "logged": true,
+            "optional": true
+        }
+    ]
+}

@@ -1,7 +1,23 @@
 {
     "description": "Energy meters measure electric power consumption/production on 3 phases. Often used as root measurements.",
-    "extends": [ "smartmeterconsumer", "smartmeterproducer" ],
+    "extends": [ "smartmeter" ],
     "states": [
+        {
+            "name": "totalEnergyConsumed",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "totalEnergyProduced",
+            "type": "double",
+            "unit": "KiloWattHour"
+        },
+        {
+            "name": "currentPower",
+            "type": "double",
+            "unit": "Watt",
+            "logged": true
+        },
         {
             "name": "energyConsumedPhaseA",
             "type": "double",

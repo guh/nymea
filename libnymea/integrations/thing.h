@@ -126,7 +126,9 @@ public:
     Q_INVOKABLE void setSettings(const ParamList &settings);
 
     Q_INVOKABLE QVariant setting(const ParamTypeId &paramTypeId) const;
+    Q_INVOKABLE QVariant setting(const QString &paramName) const;
     Q_INVOKABLE void setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value);
+    Q_INVOKABLE void setSettingValue(const QString &paramName, const QVariant &value);
 
     States states() const;
     bool hasState(const StateTypeId &stateTypeId) const;
@@ -135,8 +137,10 @@ public:
     Q_INVOKABLE QVariant stateValue(const StateTypeId &stateTypeId) const;
     Q_INVOKABLE QVariant stateValue(const QString &stateName) const;
     Q_INVOKABLE void setStateValue(const StateTypeId &stateTypeId, const QVariant &value);
+    Q_INVOKABLE void setStateValue(const QString &stateName, const QVariant &value);
 
     Q_INVOKABLE State state(const StateTypeId &stateTypeId) const;
+    Q_INVOKABLE State state(const QString &stateName) const;
 
     QList<EventTypeId> loggedEventTypeIds() const;
 

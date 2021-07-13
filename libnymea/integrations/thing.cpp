@@ -266,6 +266,12 @@ QVariant Thing::setting(const ParamTypeId &paramTypeId) const
     return QVariant();
 }
 
+QVariant Thing::setting(const QString &paramName) const
+{
+    ParamTypeId paramTypeId = m_thingClass.settingsTypes().findByName(paramName).id();
+    return setting(paramTypeId);
+}
+
 void Thing::setSettingValue(const ParamTypeId &paramTypeId, const QVariant &value)
 {
     ParamList settings;
@@ -289,6 +295,12 @@ void Thing::setSettingValue(const ParamTypeId &paramTypeId, const QVariant &valu
         m_settings = settings;
         emit settingChanged(paramTypeId, value);
     }
+}
+
+void Thing::setSettingValue(const QString &paramName, const QVariant &value)
+{
+    ParamTypeId paramTypeId = m_thingClass.settingsTypes().findByName(paramName).id();
+    setSettingValue(paramTypeId, value);
 }
 
 /*! Returns the states of this thing. It must match the \l{StateType} description in the associated \l{ThingClass}. */
@@ -386,6 +398,12 @@ void Thing::setStateValue(const StateTypeId &stateTypeId, const QVariant &value)
     qCWarning(dcThing).nospace() << m_name << ": Failed setting state " << stateType.name() << "to" << value;
 }
 
+void Thing::setStateValue(const QString &stateName, const QVariant &value)
+{
+    StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
+    setStateValue(stateTypeId, value);
+}
+
 /*! Returns the \l{State} with the given \a stateTypeId of this thing. */
 State Thing::state(const StateTypeId &stateTypeId) const
 {
@@ -395,6 +413,13 @@ State Thing::state(const StateTypeId &stateTypeId) const
         }
     }
     return State(StateTypeId(), ThingId());
+}
+
+/*! Returns the \l{State} with the given name of this thing. */
+State Thing::state(const QString &stateName) const
+{
+    StateTypeId stateTypeId = m_thingClass.stateTypes().findByName(stateName).id();
+    return state(stateTypeId);
 }
 
 QList<EventTypeId> Thing::loggedEventTypeIds() const

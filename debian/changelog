@@ -1,7 +1,12 @@
-nymea (0.29.0) UNRELEASED; urgency=medium
+nymea (0.29.0) xenial; urgency=medium
 
+  [ Michael Zanetti ]
+  * Bump version to 0.29.0
+  * Add O2, PH and ORP sensor interfaces
+  * Don't make energymeter inherit from smartmeterproducer/consumer
+  * Add more methods to get to states by name instead of id
 
- -- Michael Zanetti <michael.zanetti@nymea.io>  Fri, 09 Jul 2021 13:37:38 +0200
+ -- Jenkins <jenkins@nymea.io>  Tue, 13 Jul 2021 12:28:18 +0200
 
 nymea (0.28.0) xenial; urgency=medium
 

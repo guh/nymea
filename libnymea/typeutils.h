@@ -140,7 +140,8 @@ public:
         UnitDuration,
         UnitNewton,
         UnitNewtonMeter,
-        UnitRpm
+        UnitRpm,
+        UnitMilligramPerLiter,
     };
     Q_ENUM(Unit)
 

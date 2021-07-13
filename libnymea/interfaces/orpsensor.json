@@ -1,0 +1,12 @@
+{
+    "description": "Interface for ORP (Oxidation Reduction Potential) sensors.",
+    "extends": "sensor",
+    "states": [
+        {
+            "name": "orp",
+            "type": "double",
+            "unit": "MilliVolt",
+            "logged": true
+        }
+    ]
+}
